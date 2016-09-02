@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <title>yo momma</title>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+	<script>
+  		var socket = io();
+     	var currentlyLongPressing = false;
+     	var clicked = false;
+     	var longPressStart = function(remote, code){
+     		console.log(remote);
+     		console.log(code);
+     		console.log('long')
+     		currentlyLongPressing = true;
+            socket.emit('startButtonPress',{remote: remote, code: code});
+        }
+        var longPressEnd = function(remote, code){
+     		console.log(remote);
+     		console.log(code);
+     		console.log('long stop')
+            socket.emit('stopButtonPress',{remote: remote, code: code});
+        }
+        var singlePress = function(remote, code){
+        	console.log(remote);
+     		console.log(code);
+     		console.log('single')
+     		socket.emit('singleButtonPress',{remote: remote, code: code});
+        }
+     	socket.on('availableRemotes', function(msg){
+     			console.log(msg);
+     			for(var remoteName in msg){
+     			msg[remoteName].forEach(function(remoteCode){
+     				var $input = $('<input type="button" value="'+remoteName+' '+remoteCode+'" data-remotename="'+remoteName+'" data-remotecode="'+remoteCode+'" class=".col-md-4"/>');
+     				 $input.appendTo($("#buttonContainer"));
+     			});
+             };
+        var timeoutId = 0;
+		$(':button').mousedown(function() {
+			var name = $(this).data('remotename');
+			var code = $(this).data('remotecode');
+			clicked = true;
+			timeoutId = setTimeout(longPressStart, 500, name, code);
+
+		}).bind('mouseup mouseleave', function() {
+			if(clicked && !currentlyLongPressing){
+				var name = $(this).data('remotename');
+				var code = $(this).data('remotecode');
+				singlePress(name, code);
+			}
+			else if(currentlyLongPressing){
+				var name = $(this).data('remotename');
+				var code = $(this).data('remotecode');
+				longPressEnd(name, code);
+			}
+			clicked = false;
+			currentlyLongPressing = false;
+			clearTimeout(timeoutId);
+		});
+     	});
+
+    	
+     	
+	</script>
+  	</head>
+	<body>
+		<div class="row" id="buttonContainer">
+
+		</div>
+  	</body>
+</html>

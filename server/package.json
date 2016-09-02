@@ -1,0 +1,9 @@
+{
+  "name": "Pi-Blaster",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "socket.io": "latest",
+    "express": "latest"
+  }
+}
